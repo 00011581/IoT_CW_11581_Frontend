@@ -3,17 +3,9 @@ var temperature = 0;
 var photoResistor = 0;
 var soilMoisture = 0;
 
-var waterPumpMotorValue = 0;    // false
+var waterPumpValue = 0;
 var servoMotorValue = 0;
 var roofMotorValue = 0;
-
-var roofBtnId = document.getElementById("roofBtn");
-var servoBtnId = document.getElementById("servoBtn");
-var waterBtnId = document.getElementById("waterBtn");
-var xyValues = [
-    {x:humidity, y:temperature}
-  ];
-
 
 
 const firebaseConfig = {
@@ -30,6 +22,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
+
 // Sensors
 var dbHumidity = database.ref('Humidity');
 var dbTemperature = database.ref('Temperature');
@@ -63,114 +56,98 @@ dbSoilMoisture.on('value', function(getdata2){
     document.getElementById('soil_moisture_value').innerHTML = soilMoisture + "%";
 })
 
-// Fetch the data for Activators
+
+// Fetching values of Actuators
 dbRoofMotorStatus.on('value', function(getdata2){
-    temperature = getdata2.val();
-    //document.getElementById('temperature').innerHTML = temp + "&#8451;";
+    roofMotorValue = getdata2.val();
+    handleRoofMotorButton(roofMotorValue);
 })
 
 dbServoMotorStatus.on('value', function(getdata2){
-    photoResistor = getdata2.val();
-    //document.getElementById('photoResistor').innerHTML = temp + "&#8451;";
+    servoMotorValue = getdata2.val();
+    handleServoMotorButton(servoMotorValue);
 })
 
 dbWaterPumpStatus.on('value', function(getdata2){
-    soilMoisture = getdata2.val();
-    //document.getElementById('soilMoisture').innerHTML = temp + "&#8451;";
+    waterPumpValue = getdata2.val();
+    handleWaterPumpButton(waterPumpValue);
 })
 
 
-roofMotor(roofMotorValue);
-servoMotor(servoMotorValue);
-waterMotor(waterPumpMotorValue);
+// Handling button text
+function handleRoofMotorButton(value) {
+    var roofButton = document.getElementById("roofBtn")
+    if (value == 1){
+        roofButton.classList.add("btn-outline-danger");
+        roofButton.classList.remove("btn-success");
+        roofButton.innerText = "OFF"
+    }
+    else {
+        roofButton.classList.add("btn-success");
+        roofButton.classList.remove("btn-outline-danger");
+        roofButton.innerText = "ON"
+    }
+}
 
+function handleServoMotorButton(value) {
+    var servoButton = document.getElementById("servoBtn")
+    if (value == 1){
+        servoButton.classList.remove("btn-success");
+        servoButton.classList.add("btn-outline-danger");
+        servoButton.innerText = "OFF"
+    }
+    else {
+        servoButton.classList.remove("btn-outline-danger");
+        servoButton.classList.add("btn-success");
+        servoButton.innerText = "ON"
+    }
+}
 
-function roofMotor(value){
-    if (value == 1) {
-        roofBtnId.classList.add("btn-success");
-        roofBtnId.classList.remove("btn-outline-danger");
-        roofBtnId.innerHTML = "ON"
-    } else {
-        roofBtnId.classList.remove("btn-success");
-        roofBtnId.classList.add("btn-outline-danger");
-        roofBtnId.innerHTML = "OFF"
+function handleWaterPumpButton(value) {
+    var waterButton = document.getElementById("waterBtn")
+    if (value == 1){
+        waterButton.classList.remove("btn-success");
+        waterButton.classList.add("btn-outline-danger");
+        waterButton.innerText = "OFF"
+    }
+    else {
+        waterButton.classList.remove("btn-outline-danger");
+        waterButton.classList.add("btn-success");
+        waterButton.innerText = "ON"
     }
 }
 
 
-function servoMotor(value){
-    if (value == 1) {
-        servoBtnId.classList.add("btn-success");
-        servoBtnId.classList.remove("btn-outline-danger");
-        servoBtnId.innerHTML = "ON"
-    } else {
-        servoBtnId.classList.remove("btn-success");
-        servoBtnId.classList.add("btn-outline-danger");
-        servoBtnId.innerHTML = "OFF"
-    }
-}
-
-function waterMotor(value){
-    if (value == 1) {
-        waterBtnId.classList.add("btn-success");
-        waterBtnId.classList.remove("btn-outline-danger");
-        waterBtnId.innerHTML = "ON"
-    } else {
-        waterBtnId.classList.remove("btn-success");
-        waterBtnId.classList.add("btn-outline-danger");
-        waterBtnId.innerHTML = "OFF"
-    }
-}
-
+// Handling onClick actions
 function onClickRoof() {
-    roofValue = !roofMotorValue;
-    roofMotor(roofValue)
+    if (roofMotorValue == 0) {
+        dbRoofMotorStatus.set(1);
+        handleRoofMotorButton(1);
+    }
+    else {
+        dbRoofMotorStatus.set(0);
+        handleRoofMotorButton(0);
+    }
 }
 
 function onClickServo() {
-    servoValue = !roofMotorValue;
-    servoMotor(servoValue)
+    if (servoMotorValue == 0) {
+        dbServoMotorStatus.set(1);
+        handleServoMotorButton(1);
+    }
+    else {
+        dbServoMotorStatus.set(0);
+        handleServoMotorButton(0);
+    }
 }
 
 function onClickWater() {
-    waterValue = !roofMotorValue;
-    waterMotor(waterValue)
+    if (waterPumpValue == 0) {
+        dbWaterPumpStatus.set(1);
+        handleWaterPumpButton(1);
+    }
+    else {
+        dbWaterPumpStatus.set(0);
+        handleWaterPumpButton(0);
+    }
 }
-
-// function press() {
-//     index++;
-//     if (index%2==1) {
-//     database.ref('LED').set("1");
-//     document.getElementById('led').innerHTML="turn off";
-// }
-// else {
-//     database.ref('LED').set("0");
-//     document.getElementById('led').innerHTML="turn on";
-// }
-// }
-
-
-/* <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyA0vUouXw1ax_9CfdIO55LX0LEdAi0fhpE",
-    authDomain: "iot-cw-00011581-6458a.firebaseapp.com",
-    databaseURL: "https://iot-cw-00011581-6458a-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "iot-cw-00011581-6458a",
-    storageBucket: "iot-cw-00011581-6458a.appspot.com",
-    messagingSenderId: "602842487625",
-    appId: "1:602842487625:web:7c677ff1a91d16bb279898",
-    measurementId: "G-B03YWK1WBK"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script> */
